@@ -30,6 +30,8 @@ export type GuestRow = {
   id: string;
   name: string | null;
   email: string;
+  phone: string | null;
+  source: "INVITED" | "LINK";
   token: string;
   inviteStatus: InviteStatus;
   rsvpStatus: RsvpStatus;
@@ -46,6 +48,15 @@ const INVITE: Record<InviteStatus, { label: string; tone: "neutral" | "accent" |
   FAILED: { label: "Failed", tone: "danger" },
 };
 
+/** Guests who replied without an email (via the link, or marked by the host) don't need one. */
+function inviteBadge(g: GuestRow) {
+  if (g.inviteStatus !== "NOT_SENT") return INVITE[g.inviteStatus];
+  if (g.source === "LINK") return { label: "Via link", tone: "accent" as const };
+  if (g.rsvpStatus !== "PENDING") return { label: "Not needed", tone: "neutral" as const };
+  return INVITE.NOT_SENT;
+}
+const needsInvite = (g: GuestRow) => g.inviteStatus === "NOT_SENT" && g.source === "INVITED" && g.rsvpStatus === "PENDING";
+
 const RSVP: Record<RsvpStatus, { label: string; tone: "warning" | "success" | "danger" }> = {
   PENDING: { label: "Awaiting", tone: "warning" },
   ATTENDING: { label: "Attending", tone: "success" },
@@ -54,7 +65,8 @@ const RSVP: Record<RsvpStatus, { label: string; tone: "warning" | "success" | "d
 
 const FILTERS = [
   { key: "all", label: "All", test: () => true },
-  { key: "not-sent", label: "Not sent", test: (g: GuestRow) => g.inviteStatus === "NOT_SENT" },
+  { key: "not-sent", label: "Not sent", test: needsInvite },
+  { key: "via-link", label: "Via link", test: (g: GuestRow) => g.source === "LINK" },
   { key: "awaiting", label: "Awaiting", test: (g: GuestRow) => g.rsvpStatus === "PENDING" },
   { key: "attending", label: "Attending", test: (g: GuestRow) => g.rsvpStatus === "ATTENDING" },
   { key: "declined", label: "Declined", test: (g: GuestRow) => g.rsvpStatus === "DECLINED" },
@@ -79,17 +91,19 @@ export function GuestManager({
   guests,
   capacity,
   rsvpBaseUrl,
+  openRsvp,
 }: {
   eventId: string;
   guests: GuestRow[];
   capacity: number | null;
   rsvpBaseUrl: string;
+  openRsvp: boolean;
 }) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<FilterKey>("all");
   const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: "guest", dir: 1 });
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [showAdd, setShowAdd] = useState(guests.length === 0);
+  const [showAdd, setShowAdd] = useState(guests.length === 0 && !openRsvp);
   const [toast, setToast] = useState<{ text: string; tone: "success" | "danger" } | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -112,7 +126,8 @@ export function GuestManager({
       attending,
       declined: guests.filter((g) => g.rsvpStatus === "DECLINED").length,
       awaiting: guests.filter((g) => g.rsvpStatus === "PENDING").length,
-      notSent: guests.filter((g) => g.inviteStatus === "NOT_SENT").length,
+      notSent: guests.filter(needsInvite).length,
+      viaLink: guests.filter((g) => g.source === "LINK").length,
       remindable: guests.filter(canRemind).length,
     };
   }, [guests]);
@@ -120,7 +135,7 @@ export function GuestManager({
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
     const test = FILTERS.find((f) => f.key === filter)!.test;
-    const rows = guests.filter((g) => test(g) && (!q || g.email.includes(q) || g.name?.toLowerCase().includes(q)));
+    const rows = guests.filter((g) => test(g) && (!q || g.email.includes(q) || g.name?.toLowerCase().includes(q) || g.phone?.includes(q)));
     const value = (g: GuestRow): string | number => {
       switch (sort.key) {
         case "guest":
@@ -187,7 +202,13 @@ export function GuestManager({
     <>
       {/* Stats */}
       <section className="mt-10 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard icon={UsersThreeIcon} tone="lilac" label="Invited" value={stats.invited} sub={`of ${plural(stats.total, "guest")}`} />
+        <StatCard
+          icon={UsersThreeIcon}
+          tone="lilac"
+          label="Guests"
+          value={stats.total}
+          sub={stats.viaLink ? `${stats.invited} invited · ${stats.viaLink} via link` : `${stats.invited} invited`}
+        />
         <StatCard
           icon={CheckCircleIcon}
           tone="mint"
@@ -236,7 +257,7 @@ export function GuestManager({
                 <MagnifyingGlassIcon size={18} className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-subtle" aria-hidden />
                 <input
                   type="search"
-                  placeholder="Search name or email"
+                  placeholder="Search name, email or phone"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   className="h-11 w-full rounded-full bg-field pr-4 pl-11 text-base placeholder:text-subtle focus:bg-surface focus:ring-2 focus:ring-accent/30 focus:outline-none"
@@ -245,7 +266,7 @@ export function GuestManager({
               <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
                 {FILTERS.map((f) => {
                   const count = guests.filter(f.test).length;
-                  if (f.key === "problems" && count === 0) return null;
+                  if ((f.key === "problems" || f.key === "via-link") && count === 0) return null;
                   return (
                     <button
                       key={f.key}
@@ -315,10 +336,15 @@ export function GuestManager({
                       <td className="px-2 py-3 md:px-4">
                         <p className="font-medium">{g.name ?? <span className="text-subtle">No name</span>}</p>
                         <p className="break-all text-muted">{g.email}</p>
-                        <p className="mt-1 text-xs text-subtle md:hidden">Invite: {INVITE[g.inviteStatus].label.toLowerCase()}</p>
+                        {g.phone && (
+                          <a href={`tel:${g.phone}`} className="text-muted hover:text-ink">
+                            {g.phone}
+                          </a>
+                        )}
+                        <p className="mt-1 text-xs text-subtle md:hidden">Invite: {inviteBadge(g).label.toLowerCase()}</p>
                       </td>
                       <td className="hidden px-4 py-3 md:table-cell">
-                        <Chip tone={INVITE[g.inviteStatus].tone}>{INVITE[g.inviteStatus].label}</Chip>
+                        <Chip tone={inviteBadge(g).tone}>{inviteBadge(g).label}</Chip>
                       </td>
                       <td className="w-px px-2 py-3 whitespace-nowrap md:px-4">
                         <Chip tone={RSVP[g.rsvpStatus].tone}>{RSVP[g.rsvpStatus].label}</Chip>
@@ -363,7 +389,11 @@ export function GuestManager({
         {guests.length === 0 && !showAdd && (
           <div className="py-12 text-center">
             <IconBubble icon={EnvelopeSimpleIcon} tone="peach" size="lg" className="mx-auto" />
-            <p className="mt-4 text-lg text-muted">No guests yet. Add some to send your invitations.</p>
+            <p className="mx-auto mt-4 max-w-md text-lg text-muted">
+              {openRsvp
+                ? "No RSVPs yet. Share your page link and replies will appear here, or add guests by email."
+                : "No guests yet. Add some to send your invitations."}
+            </p>
           </div>
         )}
       </section>

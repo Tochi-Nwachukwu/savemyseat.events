@@ -75,10 +75,13 @@ export default async function EventDashboardPage({ params, searchParams }: PageP
           eventId={event.id}
           capacity={event.capacity}
           rsvpBaseUrl={appUrl("/i/")}
+          openRsvp={event.openRsvp}
           guests={guests.map((g) => ({
             id: g.id,
             name: g.name,
             email: g.email,
+            phone: g.phone,
+            source: g.source,
             token: g.token,
             inviteStatus: g.inviteStatus,
             rsvpStatus: g.rsvpStatus,

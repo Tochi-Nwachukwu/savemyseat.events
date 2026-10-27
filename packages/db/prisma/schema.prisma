@@ -93,6 +93,8 @@ model Event {
   imageKey     String?
   rsvpDeadline DateTime?
   capacity     Int?
+  /// Anyone with the public link can RSVP from the event page.
+  openRsvp     Boolean   @default(true)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   guests       Guest[]
@@ -109,6 +111,13 @@ enum InviteStatus {
   FAILED
 }
 
+enum GuestSource {
+  /// Added by the host and emailed an invitation
+  INVITED
+  /// RSVP'd themselves from the public event link
+  LINK
+}
+
 enum RsvpStatus {
   PENDING
   ATTENDING
@@ -122,6 +131,8 @@ model Guest {
   event        Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
   name         String?
   email        String
+  phone        String?
+  source       GuestSource  @default(INVITED)
   /// Secret for the personal RSVP link: savemyseat.events/i/{token}
   token        String       @unique
   inviteStatus InviteStatus @default(NOT_SENT)

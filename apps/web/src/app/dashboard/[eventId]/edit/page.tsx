@@ -43,6 +43,7 @@ export default async function EditEventPage({ params }: PageProps<"/dashboard/[e
             message: event.message ?? "",
             rsvpDeadline: event.rsvpDeadline ? utcToZoned(event.rsvpDeadline, event.timezone).date : "",
             capacity: event.capacity ? String(event.capacity) : "",
+            openRsvp: String(event.openRsvp),
           }}
         />
 

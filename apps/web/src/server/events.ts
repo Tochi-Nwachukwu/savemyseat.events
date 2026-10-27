@@ -28,6 +28,7 @@ const eventSchema = z.object({
   rsvpDeadline: z.preprocess(blankToUndefined, isoDate.optional()),
   capacity: z.preprocess(blankToUndefined, z.coerce.number().int().min(1).max(100_000).optional()),
   removeImage: z.preprocess((v) => v === "true", z.boolean()),
+  openRsvp: z.preprocess((v) => v !== "false", z.boolean()),
 });
 
 export type SaveEventResult = { error: string } | undefined;
@@ -54,6 +55,7 @@ function parse(formData: FormData) {
       message: d.message ?? null,
       rsvpDeadline,
       capacity: d.capacity ?? null,
+      openRsvp: d.openRsvp,
     },
     removeImage: d.removeImage,
   } as const;

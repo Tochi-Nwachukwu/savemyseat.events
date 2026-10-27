@@ -4,6 +4,7 @@ import { CheckCircleIcon, HeartIcon, SmileySadIcon, WarningCircleIcon } from "@p
 import { useState, useTransition } from "react";
 import { Button, Field, IconBubble, Input, Textarea } from "@/components/ui";
 import { cn } from "@/lib/cn";
+import { ChoiceButton } from "@/components/rsvp-choice";
 import { respondToInvite } from "@/server/rsvp";
 
 type Status = "PENDING" | "ATTENDING" | "DECLINED";
@@ -129,40 +130,5 @@ export function RsvpForm({
         {pending ? "Sending…" : "Send my RSVP"}
       </Button>
     </form>
-  );
-}
-
-function ChoiceButton({
-  selected,
-  disabled,
-  onClick,
-  tone,
-  icon,
-  children,
-}: {
-  selected: boolean;
-  disabled?: boolean;
-  onClick: () => void;
-  tone: "mint" | "blush";
-  icon: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  const selectedClass = tone === "mint" ? "bg-mint text-mint-ink ring-2 ring-mint-ink/40" : "bg-blush text-blush-ink ring-2 ring-blush-ink/40";
-  return (
-    <button
-      type="button"
-      role="radio"
-      aria-checked={selected}
-      disabled={disabled}
-      onClick={onClick}
-      className={cn(
-        "flex h-16 items-center justify-center gap-2.5 rounded-full text-lg font-medium transition-all",
-        "focus-visible:ring-4 focus-visible:ring-accent/25 focus-visible:outline-none disabled:opacity-50",
-        selected ? selectedClass : "bg-field text-ink hover:bg-field-hover",
-      )}
-    >
-      {icon}
-      {children}
-    </button>
   );
 }

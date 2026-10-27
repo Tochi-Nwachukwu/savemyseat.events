@@ -29,11 +29,11 @@ export async function addGuests(eventId: string, raw: string) {
   return { added: count, duplicates: guests.length - count, invalid };
 }
 
-/** guestIds omitted = everyone who hasn't been invited yet. */
+/** guestIds omitted = everyone the host added who hasn't been emailed yet (not link RSVPs). */
 export async function sendInvites(eventId: string, guestIds?: string[]) {
   const { event, user } = await ownedEvent(eventId);
   const guests = await prisma.guest.findMany({
-    where: guestIds ? { eventId, id: { in: guestIds } } : { eventId, inviteStatus: "NOT_SENT" },
+    where: guestIds ? { eventId, id: { in: guestIds } } : { eventId, inviteStatus: "NOT_SENT", source: "INVITED", rsvpStatus: "PENDING" },
     orderBy: { createdAt: "asc" },
   });
   if (guests.length === 0) return { sent: 0, failed: 0 };

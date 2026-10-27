@@ -21,10 +21,12 @@ export async function GET(_req: Request, { params }: RouteContext<"/dashboard/[e
   if (!event) return new Response("Not found", { status: 404 });
 
   const rows = [
-    ["Name", "Email", "Invite", "RSVP", "Note", "Replied at", "RSVP link"],
+    ["Name", "Email", "Phone", "Source", "Invite", "RSVP", "Note", "Replied at", "RSVP link"],
     ...event.guests.map((g) => [
       g.name,
       g.email,
+      g.phone,
+      g.source === "LINK" ? "Event link" : "Invited",
       LABELS.invite[g.inviteStatus],
       LABELS.rsvp[g.rsvpStatus],
       g.note,

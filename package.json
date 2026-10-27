@@ -9,6 +9,7 @@
     "typecheck": "turbo run typecheck",
     "db:generate": "pnpm --filter @savemyseat/db generate",
     "db:migrate": "pnpm --filter @savemyseat/db migrate",
+    "db:deploy": "pnpm --filter @savemyseat/db migrate:deploy",
     "db:push": "pnpm --filter @savemyseat/db push",
     "db:seed": "pnpm --filter @savemyseat/db seed",
     "db:studio": "pnpm --filter @savemyseat/db studio"

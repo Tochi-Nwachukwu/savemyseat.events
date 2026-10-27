@@ -50,5 +50,5 @@ Copy the signing secret (`whsec_…`) into `RESEND_WEBHOOK_SECRET`. For "Opened"
 ```bash
 # edit packages/db/prisma/schema.prisma, then:
 pnpm db:migrate                                       # creates + applies a migration locally
-pnpm --filter @savemyseat/db deploy                   # apply to production (uses DATABASE_URL_UNPOOLED)
+pnpm db:deploy                                        # apply to production (uses DATABASE_URL_UNPOOLED)
 ```

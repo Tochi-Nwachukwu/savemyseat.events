@@ -32,6 +32,8 @@ export type EventFormValues = {
   message: string;
   rsvpDeadline: string;
   capacity: string;
+  /** "true" | "false" */
+  openRsvp: string;
 };
 
 const EMPTY: EventFormValues = {
@@ -47,6 +49,7 @@ const EMPTY: EventFormValues = {
   message: "",
   rsvpDeadline: "",
   capacity: "",
+  openRsvp: "true",
 };
 
 const OCCASIONS = [
@@ -425,6 +428,32 @@ export function EventForm({
 
         {step === 3 && (
           <>
+            <Field
+              label="Who can RSVP?"
+              hint={
+                values.openRsvp === "true"
+                  ? "Share your page link anywhere. People fill in their name, email and phone to RSVP, and show up in your guest list."
+                  : "Only guests you add and email can RSVP, using their personal link."
+              }
+            >
+              <div className="flex flex-wrap gap-3">
+                <ChoicePill
+                  name="openRsvp"
+                  value="true"
+                  label="Anyone with the link"
+                  checked={values.openRsvp === "true"}
+                  onChange={() => set("openRsvp", "true")}
+                />
+                <ChoicePill
+                  name="openRsvp"
+                  value="false"
+                  label="Only people I invite"
+                  checked={values.openRsvp === "false"}
+                  onChange={() => set("openRsvp", "false")}
+                />
+              </div>
+            </Field>
+
             <Field label="RSVP by" htmlFor="rsvpDeadline" hint="Optional. Guests can reply until the end of this day.">
               <Input
                 id="rsvpDeadline"
@@ -455,6 +484,7 @@ export function EventForm({
                 <ReviewRow label="When" value={formatWallClock(values.date, values.time)} />
                 <ReviewRow label="Where" value={values.venueName} />
                 <ReviewRow label="Image" value={preview ? "Added" : "None"} />
+                <ReviewRow label="RSVPs" value={values.openRsvp === "true" ? "Anyone with the link" : "Invited guests only"} />
               </dl>
             </div>
           </>
