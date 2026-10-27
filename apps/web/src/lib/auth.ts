@@ -12,10 +12,18 @@ const vercelOrigins = [process.env.VERCEL_URL, process.env.VERCEL_BRANCH_URL, pr
   .filter(Boolean)
   .map((host) => `https://${host}`);
 
+// Accept both example.com and www.example.com, whichever one the domain redirects to.
+function wwwTwin(url: string | undefined) {
+  if (!url) return [];
+  const { protocol, hostname } = new URL(url);
+  if (hostname === "localhost" || hostname.endsWith(".vercel.app")) return [];
+  return [`${protocol}//${hostname.startsWith("www.") ? hostname.slice(4) : `www.${hostname}`}`];
+}
+
 export const auth = betterAuth({
   baseURL: process.env.APP_URL,
   secret: process.env.BETTER_AUTH_SECRET,
-  trustedOrigins: vercelOrigins,
+  trustedOrigins: [...vercelOrigins, ...wwwTwin(process.env.APP_URL)],
   database: prismaAdapter(prisma, { provider: "postgresql" }),
   session: {
     expiresIn: 60 * 60 * 24 * 30, // 30 days
