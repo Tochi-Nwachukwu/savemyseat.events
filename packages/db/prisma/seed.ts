@@ -31,10 +31,11 @@ const event = await prisma.event.upsert({
   },
 });
 
+// Resend test inboxes: safe to "send" to without bouncing real mail.
 const sampleGuests = [
-  { name: "Ada Obi", email: "ada@example.com", rsvpStatus: "ATTENDING" as const },
-  { name: "Tunde Bello", email: "tunde@example.com", rsvpStatus: "DECLINED" as const },
-  { name: "Grace Kim", email: "grace@example.com", rsvpStatus: "PENDING" as const },
+  { name: "Ada Obi", email: "delivered+ada@resend.dev", rsvpStatus: "ATTENDING" as const },
+  { name: "Tunde Bello", email: "delivered+tunde@resend.dev", rsvpStatus: "DECLINED" as const },
+  { name: "Grace Kim", email: "delivered+grace@resend.dev", rsvpStatus: "PENDING" as const },
 ];
 
 for (const g of sampleGuests) {

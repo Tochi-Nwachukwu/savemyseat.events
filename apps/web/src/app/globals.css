@@ -23,6 +23,40 @@
   --color-danger-soft: #fdeceb;
   --color-warning: #9a6200;
   --color-warning-soft: #fdf3dc;
+
+  /* Pastels: soft fill + ink for icons/text on that fill */
+  --color-lilac: #ece8fb;
+  --color-lilac-ink: #5b49c2;
+  --color-peach: #ffe8dc;
+  --color-peach-ink: #c8623a;
+  --color-mint: #dff5e9;
+  --color-mint-ink: #2b8a5c;
+  --color-sky: #dfeefc;
+  --color-sky-ink: #3473bf;
+  --color-butter: #fff4cf;
+  --color-butter-ink: #a97c06;
+  --color-blush: #fde4ee;
+  --color-blush-ink: #c24676;
+
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-float-slow: float 9s ease-in-out infinite;
+
+  @keyframes float {
+    /* transform, not translate: keeps Tailwind's translate-* positioning intact */
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+  }
 }
 
 @layer base {

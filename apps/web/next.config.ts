@@ -8,6 +8,10 @@ loadEnvConfig(path.resolve(process.cwd(), "../.."), process.env.NODE_ENV !== "pr
 
 const nextConfig: NextConfig = {
   transpilePackages: ["@savemyseat/db"],
+  experimental: {
+    // Invitation images are resized in the browser first; this leaves headroom under Vercel's 4.5 MB cap.
+    serverActions: { bodySizeLimit: "4mb" },
+  },
   images: {
     // Neon Object Storage branch endpoints, e.g. br-xxx.storage.c-6.us-east-2.aws.neon.tech
     remotePatterns: [{ protocol: "https", hostname: "**.aws.neon.tech" }],
