@@ -1,0 +1,4 @@
+{
+  "extends": "@savemyseat/config/tsconfig.base.json",
+  "include": ["src", "prisma", "prisma.config.ts"]
+}

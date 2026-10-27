@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Auth (better-auth core schema) ──────────────────────────────────────────
+
+model User {
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+  events        Event[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// ─── Events ──────────────────────────────────────────────────────────────────
+
+model Event {
+  id           String    @id @default(cuid())
+  ownerId      String
+  owner        User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  /// Public URL: savemyseat.events/{slug}
+  slug         String    @unique
+  title        String
+  honoreeName  String
+  subtitle     String?
+  venueName    String
+  venueAddress String?
+  /// Stored in UTC; rendered in `timezone`.
+  startsAt     DateTime
+  /// IANA zone, e.g. "America/New_York"
+  timezone     String
+  message      String?
+  /// Object key in the Neon "invitations" bucket; URL is built at render time.
+  imageKey     String?
+  rsvpDeadline DateTime?
+  capacity     Int?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  guests       Guest[]
+
+  @@index([ownerId])
+}
+
+enum InviteStatus {
+  NOT_SENT
+  SENT
+  DELIVERED
+  OPENED
+  BOUNCED
+  FAILED
+}
+
+enum RsvpStatus {
+  PENDING
+  ATTENDING
+  DECLINED
+}
+
+/// One invite = one person. Headcount is the number of ATTENDING guests.
+model Guest {
+  id           String       @id @default(cuid())
+  eventId      String
+  event        Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name         String?
+  email        String
+  /// Secret for the personal RSVP link: savemyseat.events/i/{token}
+  token        String       @unique
+  inviteStatus InviteStatus @default(NOT_SENT)
+  sentAt       DateTime?
+  remindedAt   DateTime?
+  /// Resend email id of the latest message, matched by the webhook.
+  lastEmailId  String?
+  rsvpStatus   RsvpStatus   @default(PENDING)
+  note         String?
+  respondedAt  DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@unique([eventId, email])
+  @@index([eventId, rsvpStatus])
+  @@index([lastEmailId])
+}

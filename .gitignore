@@ -1,0 +1,14 @@
+node_modules
+.next
+.turbo
+out
+dist
+.env
+.env*.local
+.vercel
+*.tsbuildinfo
+next-env.d.ts
+packages/db/src/generated
+apps/web/public/uploads
+.DS_Store
+.neon

@@ -1,0 +1,33 @@
+{
+  "name": "@savemyseat/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "generate": "prisma generate",
+    "migrate": "prisma migrate dev",
+    "deploy": "prisma migrate deploy",
+    "push": "prisma db push",
+    "seed": "prisma db seed",
+    "studio": "prisma studio",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "7.10.1",
+    "@prisma/client": "7.10.1",
+    "@vercel/functions": "^3.10.3",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "@savemyseat/config": "workspace:*",
+    "@types/node": "^22",
+    "@types/pg": "^8.23.1",
+    "dotenv": "^17",
+    "prisma": "7.10.1",
+    "tsx": "^4",
+    "typescript": "5.9.3"
+  }
+}

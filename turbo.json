@@ -1,0 +1,14 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalEnv": ["DATABASE_URL", "DATABASE_URL_UNPOOLED", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_ENDPOINT_URL_S3", "AWS_REGION", "APP_URL", "BETTER_AUTH_SECRET", "RESEND_API_KEY", "RESEND_WEBHOOK_SECRET", "EMAIL_FROM"],
+  "tasks": {
+    "generate": { "cache": false },
+    "build": {
+      "dependsOn": ["^generate", "^build"],
+      "outputs": [".next/**", "!.next/cache/**"]
+    },
+    "dev": { "dependsOn": ["^generate"], "cache": false, "persistent": true },
+    "lint": {},
+    "typecheck": { "dependsOn": ["^generate"] }
+  }
+}
