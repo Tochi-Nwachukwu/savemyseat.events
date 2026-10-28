@@ -12,7 +12,8 @@
     "db:deploy": "pnpm --filter @savemyseat/db migrate:deploy",
     "db:push": "pnpm --filter @savemyseat/db push",
     "db:seed": "pnpm --filter @savemyseat/db seed",
-    "db:studio": "pnpm --filter @savemyseat/db studio"
+    "db:studio": "pnpm --filter @savemyseat/db studio",
+    "admin:create": "pnpm --filter @savemyseat/web admin:create"
   },
   "devDependencies": {
     "@neon/config": "^1.9.4",

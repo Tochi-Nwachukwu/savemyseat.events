@@ -25,7 +25,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 sm:px-6">
-      <DashboardHeader email={user.email} />
+      <DashboardHeader user={user} />
 
       <main className="py-10">
         <div className="flex flex-wrap items-end justify-between gap-4">

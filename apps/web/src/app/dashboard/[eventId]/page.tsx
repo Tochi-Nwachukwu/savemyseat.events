@@ -27,7 +27,7 @@ export default async function EventDashboardPage({ params, searchParams }: PageP
 
   return (
     <div className="mx-auto max-w-6xl px-4 pb-24 sm:px-6">
-      <DashboardHeader email={user.email} />
+      <DashboardHeader user={user} />
 
       <main className="pt-4">
         <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-base font-medium text-muted hover:text-ink">

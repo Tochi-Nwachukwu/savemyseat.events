@@ -7,6 +7,8 @@ import { authClient } from "@/lib/auth-client";
 
 export function LoginForm({ callbackURL, linkExpired }: { callbackURL: string; linkExpired: boolean }) {
   const [email, setEmail] = useState("");
+  const [usePassword, setUsePassword] = useState(false);
+  const [password, setPassword] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
   const [error, setError] = useState(linkExpired ? "That link has expired or was already used. Send yourself a new one." : "");
 
@@ -14,6 +16,16 @@ export function LoginForm({ callbackURL, linkExpired }: { callbackURL: string; l
     e.preventDefault();
     setStatus("sending");
     setError("");
+    if (usePassword) {
+      const { error } = await authClient.signIn.email({ email: email.trim(), password, callbackURL });
+      if (error) {
+        setStatus("idle");
+        setError("That email and password don't match. Try again, or use an email link.");
+      } else {
+        window.location.href = callbackURL;
+      }
+      return;
+    }
     const { error } = await authClient.signIn.magicLink({
       email: email.trim(),
       callbackURL,
@@ -70,9 +82,32 @@ export function LoginForm({ callbackURL, linkExpired }: { callbackURL: string; l
         />
       </Field>
 
+      {usePassword && (
+        <Field label="Password" htmlFor="password" className="mt-8">
+          <Input
+            id="password"
+            type="password"
+            autoComplete="current-password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </Field>
+      )}
+
       <Button type="submit" size="lg" block className="mt-10" disabled={status === "sending"}>
-        {status === "sending" ? "Sending your link…" : "Email me a link"}
+        {status === "sending" ? (usePassword ? "Signing in…" : "Sending your link…") : usePassword ? "Sign in" : "Email me a link"}
       </Button>
+      <button
+        type="button"
+        onClick={() => {
+          setUsePassword((v) => !v);
+          setError("");
+        }}
+        className="mx-auto mt-6 block text-base font-medium text-muted underline-offset-4 hover:text-ink hover:underline"
+      >
+        {usePassword ? "Email me a link instead" : "Use a password instead"}
+      </button>
     </form>
   );
 }

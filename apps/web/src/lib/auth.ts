@@ -25,6 +25,8 @@ export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
   trustedOrigins: [...vercelOrigins, ...wwwTwin(process.env.APP_URL)],
   database: prismaAdapter(prisma, { provider: "postgresql" }),
+  // Passwords only for accounts created with `pnpm admin:create`; everyone else uses magic links.
+  emailAndPassword: { enabled: true, disableSignUp: true, minPasswordLength: 12 },
   session: {
     expiresIn: 60 * 60 * 24 * 30, // 30 days
     cookieCache: { enabled: true, maxAge: 5 * 60 },
